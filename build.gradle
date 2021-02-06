@@ -1,0 +1,21 @@
+allprojects {
+    group 'io.izzel.arclight'
+    version '1.0.11'
+
+    ext {
+        agpVersion = '1.9'
+    }
+
+    task cleanBuild {
+        doFirst {
+            project.file("build/libs").deleteDir()
+        }
+    }
+}
+
+task collect(type: Copy) {
+    destinationDir = file('build/libs')
+    subprojects.each { p ->
+        from p.file('build/libs')
+    }
+}
