@@ -1183,8 +1183,11 @@ public abstract class ServerPlayNetHandlerMixin implements ServerPlayNetHandlerB
                         this.player.sendContainerToPlayer(this.player.openContainer);
                     }
                 } else if (packetIn.getAction() == CUseEntityPacket.Action.ATTACK) {
-                    if (entity instanceof ItemEntity || entity instanceof ExperienceOrbEntity || entity instanceof AbstractArrowEntity || (entity == this.player && !this.player.isSpectator())) {
+                    if (entity instanceof ExperienceOrbEntity || entity instanceof AbstractArrowEntity || (entity == this.player && !this.player.isSpectator())) {
                         this.disconnect(new TranslationTextComponent("multiplayer.disconnect.invalid_entity_attacked"));
+                        LOGGER.warn("Player {} tried to attack an invalid entity", this.player.getName().getString());
+                        return;
+                    }else if(entity instanceof ItemEntity){
                         LOGGER.warn("Player {} tried to attack an invalid entity", this.player.getName().getString());
                         return;
                     }
