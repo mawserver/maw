@@ -1189,7 +1189,7 @@ public abstract class ServerPlayNetHandlerMixin implements ServerPlayNetHandlerB
                         return;
                     }else if(entity instanceof ItemEntity){
                         LOGGER.warn("Player {} tried to attack an invalid entity", this.player.getName().getString());
-                        return;
+//                         return;
                     }
                     this.player.attackTargetEntityWithCurrentItem(entity);
                     if (!itemInHand.isEmpty() && itemInHand.getCount() <= -1) {
