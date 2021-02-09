@@ -4,9 +4,12 @@
 name: Get Enviorment
 
 on:
+  push:
+    branches:
+      - '**'
   pull_request:
-    paths:
-      - '.github/workflows/enviorment.yml'
+    branches:
+      - '**'
 
 jobs:
   build:
