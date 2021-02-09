@@ -114,32 +114,45 @@ public abstract class ServerWorldMixin extends WorldMixin implements ServerWorld
         throw new RuntimeException();
     }
 
-    public void arclight$constructor(MinecraftServer p_i241885_1_, Executor p_i241885_2_, SaveFormat.LevelSave p_i241885_3_, IServerWorldInfo p_i241885_4_, RegistryKey<World> p_i241885_5_, DimensionType p_i241885_6_, IChunkStatusListener p_i241885_7_, ChunkGenerator p_i241885_8_, boolean p_i241885_9_, long p_i241885_10_, List<ISpecialSpawner> p_i241885_12_, boolean p_i241885_13_, org.bukkit.World.Environment env, org.bukkit.generator.ChunkGenerator gen) {
-        arclight$constructor(p_i241885_1_, p_i241885_2_, p_i241885_3_, p_i241885_4_, p_i241885_5_, p_i241885_6_, p_i241885_7_, p_i241885_8_, p_i241885_9_, p_i241885_10_, p_i241885_12_, p_i241885_13_);
-        this.generator = gen;
-        this.environment = env;
+    @Inject(method = "<init>", at = @At("RETURN"))
+    public void arclight$init(MinecraftServer p_i241885_1_, Executor p_i241885_2_, SaveFormat.LevelSave p_i241885_3_, IServerWorldInfo p_i241885_4_, RegistryKey<World> p_i241885_5_, DimensionType p_i241885_6_, IChunkStatusListener p_i241885_7_, ChunkGenerator p_i241885_8_, boolean p_i241885_9_, long p_i241885_10_, List<ISpecialSpawner> p_i241885_12_, boolean p_i241885_13_, org.bukkit.World.Environment env, org.bukkit.generator.ChunkGenerator gen) {
+        this.pvpMode = p_i241885_1_.isPVPEnabled();
+        this.convertable = p_i241885_3_;
+        this.uuid = WorldUUID.getUUID(p_i241885_3_.getDimensionFolder(this.getDimensionKey()));
         if (gen != null) {
             CustomChunkGenerator generator = new CustomChunkGenerator((ServerWorld) (Object) this, this.field_241102_C_.getChunkGenerator(), gen);
             ((ServerChunkProviderBridge) this.field_241102_C_).bridge$setChunkGenerator(generator);
         }
-        bridge$getWorld();
-    }
-
-    @Inject(method = "<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/storage/SaveFormat$LevelSave;Lnet/minecraft/world/storage/IServerWorldInfo;Lnet/minecraft/util/RegistryKey;Lnet/minecraft/world/DimensionType;Lnet/minecraft/world/chunk/listener/IChunkStatusListener;Lnet/minecraft/world/gen/ChunkGenerator;ZJLjava/util/List;Z)V", at = @At("RETURN"))
-    private void arclight$init(MinecraftServer minecraftServer, Executor p_i241885_2_, SaveFormat.LevelSave p_i241885_3_, IServerWorldInfo worldInfo, RegistryKey<World> p_i241885_5_, DimensionType p_i241885_6_, IChunkStatusListener p_i241885_7_, ChunkGenerator p_i241885_8_, boolean p_i241885_9_, long p_i241885_10_, List<ISpecialSpawner> p_i241885_12_, boolean p_i241885_13_, CallbackInfo ci) {
-        this.pvpMode = minecraftServer.isPVPEnabled();
-        this.convertable = p_i241885_3_;
-        this.uuid = WorldUUID.getUUID(p_i241885_3_.getDimensionFolder(this.getDimensionKey()));
-        if (worldInfo instanceof ServerWorldInfo) {
-            this.$$worldDataServer = (ServerWorldInfo) worldInfo;
-        } else if (worldInfo instanceof DerivedWorldInfo) {
+        if (p_i241885_4_ instanceof ServerWorldInfo) {
+            this.$$worldDataServer = (ServerWorldInfo) p_i241885_4_;
+        } else if (p_i241885_4_ instanceof DerivedWorldInfo) {
             // damn spigot again
-            this.$$worldDataServer = DelegateWorldInfo.wrap(((DerivedWorldInfo) worldInfo));
-            ((DerivedWorldInfoBridge) worldInfo).bridge$setDimType(this.getTypeKey());
+            this.$$worldDataServer = DelegateWorldInfo.wrap(((DerivedWorldInfo) p_i241885_4_));
+            ((DerivedWorldInfoBridge) p_i241885_4_).bridge$setDimType(this.getTypeKey());
         }
         ((ServerChunkProviderBridge) this.field_241102_C_).bridge$setViewDistance(spigotConfig.viewDistance);
         ((WorldInfoBridge) this.$$worldDataServer).bridge$setWorld((ServerWorld) (Object) this);
+        this.generator = gen;
+        this.environment = env;
+        bridge$getWorld();
     }
+
+    //Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/storage/SaveFormat$LevelSave;Lnet/minecraft/world/storage/IServerWorldInfo;Lnet/minecraft/util/RegistryKey;Lnet/minecraft/world/DimensionType;Lnet/minecraft/world/chunk/listener/IChunkStatusListener;Lnet/minecraft/world/gen/ChunkGenerator;ZJLjava/util/List;Z)V
+//        @Inject(method = "<init>", at = @At("RETURN"))
+//        private void arclight$init(MinecraftServer minecraftServer, Executor p_i241885_2_, SaveFormat.LevelSave p_i241885_3_, IServerWorldInfo worldInfo, RegistryKey<World> p_i241885_5_, DimensionType p_i241885_6_, IChunkStatusListener p_i241885_7_, ChunkGenerator p_i241885_8_, boolean p_i241885_9_, long p_i241885_10_, List<ISpecialSpawner> p_i241885_12_, boolean p_i241885_13_, CallbackInfo ci) {
+//            this.pvpMode = minecraftServer.isPVPEnabled();
+//            this.convertable = p_i241885_3_;
+//            this.uuid = WorldUUID.getUUID(p_i241885_3_.getDimensionFolder(this.getDimensionKey()));
+//            if (worldInfo instanceof ServerWorldInfo) {
+//                this.$$worldDataServer = (ServerWorldInfo) worldInfo;
+//            } else if (worldInfo instanceof DerivedWorldInfo) {
+//                // damn spigot again
+//                this.$$worldDataServer = DelegateWorldInfo.wrap(((DerivedWorldInfo) worldInfo));
+//                ((DerivedWorldInfoBridge) worldInfo).bridge$setDimType(this.getTypeKey());
+//            }
+//            ((ServerChunkProviderBridge) this.field_241102_C_).bridge$setViewDistance(spigotConfig.viewDistance);
+//            ((WorldInfoBridge) this.$$worldDataServer).bridge$setWorld((ServerWorld) (Object) this);
+//        }
 
     public Chunk getChunkIfLoaded(int x, int z) {
         return this.field_241102_C_.getChunk(x, z, false);
