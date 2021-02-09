@@ -3,6 +3,11 @@
 
 name: Get Enviorment
 
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/enviorment.yml'
+
 jobs:
   build:
 
