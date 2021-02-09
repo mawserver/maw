@@ -12,6 +12,7 @@ import io.izzel.arclight.common.bridge.world.storage.DerivedWorldInfoBridge;
 import io.izzel.arclight.common.bridge.world.storage.MapDataBridge;
 import io.izzel.arclight.common.bridge.world.storage.WorldInfoBridge;
 import io.izzel.arclight.common.mixin.core.world.WorldMixin;
+import io.izzel.arclight.common.mod.ArclightMod;
 import io.izzel.arclight.common.mod.util.ArclightCaptures;
 import io.izzel.arclight.common.mod.util.DelegateWorldInfo;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -109,50 +110,46 @@ public abstract class ServerWorldMixin extends WorldMixin implements ServerWorld
     public ServerWorldInfo $$worldDataServer;
     public SaveFormat.LevelSave convertable;
     public UUID uuid;
+    public ServerChunkProvider provider;
 
     public void arclight$constructor(MinecraftServer p_i241885_1_, Executor p_i241885_2_, SaveFormat.LevelSave p_i241885_3_, IServerWorldInfo p_i241885_4_, RegistryKey<World> p_i241885_5_, DimensionType p_i241885_6_, IChunkStatusListener p_i241885_7_, ChunkGenerator p_i241885_8_, boolean p_i241885_9_, long p_i241885_10_, List<ISpecialSpawner> p_i241885_12_, boolean p_i241885_13_) {
         throw new RuntimeException();
     }
 
-    @Inject(method = "<init>", at = @At("RETURN"))
-    public void arclight$init(MinecraftServer p_i241885_1_, Executor p_i241885_2_, SaveFormat.LevelSave p_i241885_3_, IServerWorldInfo p_i241885_4_, RegistryKey<World> p_i241885_5_, DimensionType p_i241885_6_, IChunkStatusListener p_i241885_7_, ChunkGenerator p_i241885_8_, boolean p_i241885_9_, long p_i241885_10_, List<ISpecialSpawner> p_i241885_12_, boolean p_i241885_13_, org.bukkit.World.Environment env, org.bukkit.generator.ChunkGenerator gen) {
-        this.pvpMode = p_i241885_1_.isPVPEnabled();
-        this.convertable = p_i241885_3_;
-        this.uuid = WorldUUID.getUUID(p_i241885_3_.getDimensionFolder(this.getDimensionKey()));
-        if (gen != null) {
-            CustomChunkGenerator generator = new CustomChunkGenerator((ServerWorld) (Object) this, this.field_241102_C_.getChunkGenerator(), gen);
-            ((ServerChunkProviderBridge) this.field_241102_C_).bridge$setChunkGenerator(generator);
-        }
-        if (p_i241885_4_ instanceof ServerWorldInfo) {
-            this.$$worldDataServer = (ServerWorldInfo) p_i241885_4_;
-        } else if (p_i241885_4_ instanceof DerivedWorldInfo) {
-            // damn spigot again
-            this.$$worldDataServer = DelegateWorldInfo.wrap(((DerivedWorldInfo) p_i241885_4_));
-            ((DerivedWorldInfoBridge) p_i241885_4_).bridge$setDimType(this.getTypeKey());
-        }
-        ((ServerChunkProviderBridge) this.field_241102_C_).bridge$setViewDistance(spigotConfig.viewDistance);
-        ((WorldInfoBridge) this.$$worldDataServer).bridge$setWorld((ServerWorld) (Object) this);
+    public void arclight$constructor(MinecraftServer p_i241885_1_, Executor p_i241885_2_, SaveFormat.LevelSave p_i241885_3_, IServerWorldInfo p_i241885_4_, RegistryKey<World> p_i241885_5_, DimensionType p_i241885_6_, IChunkStatusListener p_i241885_7_, ChunkGenerator p_i241885_8_, boolean p_i241885_9_, long p_i241885_10_, List<ISpecialSpawner> p_i241885_12_, boolean p_i241885_13_, org.bukkit.World.Environment env, org.bukkit.generator.ChunkGenerator gen) {
+        arclight$constructor(p_i241885_1_, p_i241885_2_, p_i241885_3_, p_i241885_4_, p_i241885_5_, p_i241885_6_, p_i241885_7_, p_i241885_8_, p_i241885_9_, p_i241885_10_, p_i241885_12_, p_i241885_13_);
         this.generator = gen;
         this.environment = env;
+        if (gen != null) {
+            p_i241885_8_ = new CustomChunkGenerator((ServerWorld) (Object) this, this.field_241102_C_.getChunkGenerator(), gen);
+            ((ServerChunkProviderBridge) this.field_241102_C_).bridge$setChunkGenerator(p_i241885_8_);
+        }
+        provider =  new ServerChunkProvider((ServerWorld) (Object)this, p_i241885_3_, p_i241885_1_.getDataFixer(), p_i241885_1_.getTemplateManager(), p_i241885_2_, p_i241885_8_, p_i241885_1_.getPlayerList().getViewDistance(), p_i241885_1_.func_230540_aS_(), p_i241885_7_, () -> p_i241885_1_.func_241755_D_().getSavedData());
         bridge$getWorld();
     }
 
-    //Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/storage/SaveFormat$LevelSave;Lnet/minecraft/world/storage/IServerWorldInfo;Lnet/minecraft/util/RegistryKey;Lnet/minecraft/world/DimensionType;Lnet/minecraft/world/chunk/listener/IChunkStatusListener;Lnet/minecraft/world/gen/ChunkGenerator;ZJLjava/util/List;Z)V
-//        @Inject(method = "<init>", at = @At("RETURN"))
-//        private void arclight$init(MinecraftServer minecraftServer, Executor p_i241885_2_, SaveFormat.LevelSave p_i241885_3_, IServerWorldInfo worldInfo, RegistryKey<World> p_i241885_5_, DimensionType p_i241885_6_, IChunkStatusListener p_i241885_7_, ChunkGenerator p_i241885_8_, boolean p_i241885_9_, long p_i241885_10_, List<ISpecialSpawner> p_i241885_12_, boolean p_i241885_13_, CallbackInfo ci) {
-//            this.pvpMode = minecraftServer.isPVPEnabled();
-//            this.convertable = p_i241885_3_;
-//            this.uuid = WorldUUID.getUUID(p_i241885_3_.getDimensionFolder(this.getDimensionKey()));
-//            if (worldInfo instanceof ServerWorldInfo) {
-//                this.$$worldDataServer = (ServerWorldInfo) worldInfo;
-//            } else if (worldInfo instanceof DerivedWorldInfo) {
-//                // damn spigot again
-//                this.$$worldDataServer = DelegateWorldInfo.wrap(((DerivedWorldInfo) worldInfo));
-//                ((DerivedWorldInfoBridge) worldInfo).bridge$setDimType(this.getTypeKey());
-//            }
-//            ((ServerChunkProviderBridge) this.field_241102_C_).bridge$setViewDistance(spigotConfig.viewDistance);
-//            ((WorldInfoBridge) this.$$worldDataServer).bridge$setWorld((ServerWorld) (Object) this);
-//        }
+    @Inject(method = "<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/storage/SaveFormat$LevelSave;Lnet/minecraft/world/storage/IServerWorldInfo;Lnet/minecraft/util/RegistryKey;Lnet/minecraft/world/DimensionType;Lnet/minecraft/world/chunk/listener/IChunkStatusListener;Lnet/minecraft/world/gen/ChunkGenerator;ZJLjava/util/List;Z)V", at = @At("RETURN"))
+    private void arclight$init(MinecraftServer minecraftServer, Executor p_i241885_2_, SaveFormat.LevelSave p_i241885_3_, IServerWorldInfo worldInfo, RegistryKey<World> p_i241885_5_, DimensionType p_i241885_6_, IChunkStatusListener p_i241885_7_, ChunkGenerator p_i241885_8_, boolean p_i241885_9_, long p_i241885_10_, List<ISpecialSpawner> p_i241885_12_, boolean p_i241885_13_, CallbackInfo ci) {
+        this.pvpMode = minecraftServer.isPVPEnabled();
+        this.convertable = p_i241885_3_;
+        this.uuid = WorldUUID.getUUID(p_i241885_3_.getDimensionFolder(this.getDimensionKey()));
+        if (worldInfo instanceof ServerWorldInfo) {
+            this.$$worldDataServer = (ServerWorldInfo) worldInfo;
+        } else if (worldInfo instanceof DerivedWorldInfo) {
+            // damn spigot again
+            this.$$worldDataServer = DelegateWorldInfo.wrap(((DerivedWorldInfo) worldInfo));
+            ((DerivedWorldInfoBridge) worldInfo).bridge$setDimType(this.getTypeKey());
+        }
+        ((ServerChunkProviderBridge) this.field_241102_C_).bridge$setViewDistance(spigotConfig.viewDistance);
+        ((WorldInfoBridge) this.$$worldDataServer).bridge$setWorld((ServerWorld) (Object) this);
+        provider =  new ServerChunkProvider((ServerWorld) (Object)this, p_i241885_3_, minecraftServer.getDataFixer(), minecraftServer.getTemplateManager(), p_i241885_2_, p_i241885_8_, minecraftServer.getPlayerList().getViewDistance(), minecraftServer.func_230540_aS_(), p_i241885_7_, () -> minecraftServer.func_241755_D_().getSavedData());
+    }
+
+    @Inject(method = "getChunkProvider", at = @At("RETURN"))
+    private ServerChunkProvider arclight$getChunkProvider(CallbackInfo ci) {
+        ArclightMod.LOGGER.error("ArcTest");
+        return provider;
+    }
 
     public Chunk getChunkIfLoaded(int x, int z) {
         return this.field_241102_C_.getChunk(x, z, false);
